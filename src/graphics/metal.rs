@@ -159,8 +159,6 @@ impl From<TextureFormat> for MTLPixelFormat {
     fn from(format: TextureFormat) -> Self {
         match format {
             TextureFormat::RGBA8 => MTLPixelFormat::RGBA8Unorm,
-            //TODO: Depth16Unorm ?
-            TextureFormat::Depth => MTLPixelFormat::Depth32Float_Stencil8,
             TextureFormat::RGBA16F => MTLPixelFormat::RGBA16Float,
             _ => todo!(),
         }

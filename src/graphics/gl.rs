@@ -1,5 +1,4 @@
-use std::ffi::CString;
-
+use std::ffi::{CStr, CString};
 use crate::{window, ResourceManager};
 
 mod cache;
@@ -73,7 +72,7 @@ struct Texture {
 }
 
 impl TextureFormat {
-    fn is_renderable(&self) -> bool {
+    fn is_renderable(&self, features: &Features) -> bool {
         use TextureFormat as F;
         match self {
             F::RGB8I => false,
@@ -82,14 +81,14 @@ impl TextureFormat {
             F::RGB8UI => false,
             F::RGB16UI => false,
             F::RGB32UI => false,
-            F::R16F => false,
-            F::RG16F => false,
+            F::R16F => features.color_buffer_float,
+            F::RG16F => features.color_buffer_float,
             F::RGB16F => false,
-            F::RGBA16F => false,
-            F::R32F => false,
+            F::RGBA16F => features.color_buffer_float,
+            F::R32F => features.color_buffer_float,
             F::RG32F => false,
-            F::RGB32F => false,
-            F::RGBA32F => false,
+            F::RGB32F => features.color_buffer_float,
+            F::RGBA32F => features.color_buffer_float,
             _ => true,
         }
     }
@@ -221,7 +220,12 @@ impl Texture {
                 bytes_data.len()
             );
         }
-        if access != TextureAccess::RenderTarget {
+        if access == TextureAccess::RenderTarget {
+            assert!(
+                params.format.is_renderable(ctx.features()),
+                "Rendering to this format is not supported"
+            );
+        } else {
             assert!(
                 params.sample_count <= 1,
                 "Multisampling is only supported for render textures"
@@ -524,6 +528,7 @@ impl Textures {
         }
     }
 }
+
 pub struct GlContext {
     shaders: ResourceManager<ShaderInternal>,
     pipelines: ResourceManager<PipelineInternal>,
@@ -832,20 +837,36 @@ impl GlContext {
 
 #[allow(clippy::field_reassign_with_default)]
 fn gl_info() -> ContextInfo {
+    use std::collections::HashSet;
+
     let version_string = unsafe { glGetString(super::gl::GL_VERSION) };
-    let gl_version_string = unsafe { std::ffi::CStr::from_ptr(version_string as _) }
+    let gl_version_string = unsafe { CStr::from_ptr(version_string.cast()) }
         .to_str()
         .unwrap()
         .to_string();
 
+    let wasm = gl_version_string.contains("WebGL 2.0");
     let mut glsl_support = GlslSupport::default();
     glsl_support.v330 = gl_version_string.starts_with("4") || gl_version_string.starts_with("3.3");
     glsl_support.v300es |= gl_version_string.contains("OpenGL ES 3");
-    glsl_support.v300es |= gl_version_string.contains("WebGL 2.0");
+    glsl_support.v300es |= wasm;
+
+    let mut extensions = HashSet::new();
+    let mut num_extensions = 0;
+    unsafe { glGetIntegerv(GL_NUM_EXTENSIONS, &mut num_extensions) };
+    for i in 0..(num_extensions as u32) {
+        let ext = unsafe {
+            CStr::from_ptr(glGetStringi(GL_EXTENSIONS, i).cast())
+        };
+        extensions.insert(ext);
+    }
 
     let features = Features {
-        color_buffer_float: false,
+        color_buffer_float: !wasm || extensions.contains(c"GL_EXT_color_buffer_float"),
+        timer_query: !wasm,
     };
+
+    println!("{:?}", features);
 
     ContextInfo {
         backend: Backend::OpenGl,

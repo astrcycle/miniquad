@@ -639,12 +639,14 @@ pub const MAX_SHADERSTAGE_IMAGES: usize = 12;
 #[derive(Clone, Debug)]
 pub struct Features {
     pub color_buffer_float: bool,
+    pub timer_query: bool,
 }
 
 impl Default for Features {
     fn default() -> Features {
         Features {
             color_buffer_float: true,
+            timer_query: true,
         }
     }
 }
