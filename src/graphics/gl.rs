@@ -50,6 +50,7 @@ enum TextureOrRenderbuffer {
     Texture(GLuint),
     Renderbuffer(GLuint),
 }
+
 impl TextureOrRenderbuffer {
     fn texture(&self) -> Option<GLuint> {
         match self {
@@ -72,17 +73,24 @@ struct Texture {
 }
 
 impl TextureFormat {
-    fn sized_internal_format(&self) -> GLenum {
+    fn is_renderable(&self) -> bool {
+        use TextureFormat as F;
         match self {
-            TextureFormat::RGB8 => GL_RGB8,
-            TextureFormat::RGBA8 => GL_RGBA8,
-            TextureFormat::RGBA16F => GL_RGBA16F,
-            TextureFormat::Depth => GL_DEPTH_COMPONENT16,
-            TextureFormat::Depth32 => GL_DEPTH_COMPONENT32,
-            #[cfg(target_arch = "wasm32")]
-            TextureFormat::Alpha => GL_ALPHA,
-            #[cfg(not(target_arch = "wasm32"))]
-            TextureFormat::Alpha => GL_R8,
+            F::RGB8I => false,
+            F::RGB16I => false,
+            F::RGB32I => false,
+            F::RGB8UI => false,
+            F::RGB16UI => false,
+            F::RGB32UI => false,
+            F::R16F => false,
+            F::RG16F => false,
+            F::RGB16F => false,
+            F::RGBA16F => false,
+            F::R32F => false,
+            F::RG32F => false,
+            F::RGB32F => false,
+            F::RGBA32F => false,
+            _ => true,
         }
     }
 }
@@ -90,16 +98,46 @@ impl TextureFormat {
 /// Converts from TextureFormat to (internal_format, format, pixel_type)
 impl From<TextureFormat> for (GLenum, GLenum, GLenum) {
     fn from(format: TextureFormat) -> Self {
+        use TextureFormat as F;
         match format {
-            TextureFormat::RGB8 => (GL_RGB, GL_RGB, GL_UNSIGNED_BYTE),
-            TextureFormat::RGBA8 => (GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE),
-            TextureFormat::RGBA16F => (GL_RGBA16F, GL_RGBA, GL_FLOAT),
-            TextureFormat::Depth => (GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT),
-            TextureFormat::Depth32 => (GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT),
-            #[cfg(target_arch = "wasm32")]
-            TextureFormat::Alpha => (GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE),
-            #[cfg(not(target_arch = "wasm32"))]
-            TextureFormat::Alpha => (GL_R8, GL_RED, GL_UNSIGNED_BYTE), // texture updates will swizzle Red -> Alpha to match WASM
+            F::R8 => (GL_R8, GL_RED, GL_UNSIGNED_BYTE),
+            F::RG8 => (GL_RG8, GL_RG, GL_UNSIGNED_BYTE),
+            F::RGB8 => (GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE),
+            F::RGBA8 => (GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE),
+            F::R8I => (GL_R8I, GL_RED, GL_BYTE),
+            F::RG8I => (GL_RG8I, GL_RG, GL_BYTE),
+            F::RGB8I => (GL_RGB8I, GL_RGB, GL_BYTE),
+            F::RGBA8I => (GL_RGBA8I, GL_RGBA, GL_BYTE),
+            F::R16I => (GL_R16I, GL_RED, GL_SHORT),
+            F::RG16I => (GL_RG16I, GL_RG, GL_SHORT),
+            F::RGB16I => (GL_RGB16I, GL_RGB, GL_SHORT),
+            F::RGBA16I => (GL_RGBA16I, GL_RGBA, GL_SHORT),
+            F::R32I => (GL_R32I, GL_RED, GL_INT),
+            F::RG32I => (GL_RG32I, GL_RG, GL_INT),
+            F::RGB32I => (GL_RGB32I, GL_RGB, GL_INT),
+            F::RGBA32I => (GL_RGBA32I, GL_RGBA, GL_INT),
+            F::R8UI => (GL_R8UI, GL_RED, GL_UNSIGNED_BYTE),
+            F::RG8UI => (GL_RG8UI, GL_RG, GL_UNSIGNED_BYTE),
+            F::RGB8UI => (GL_RGB8UI, GL_RGB, GL_UNSIGNED_BYTE),
+            F::RGBA8UI => (GL_RGBA8UI, GL_RGBA, GL_UNSIGNED_BYTE),
+            F::R16UI => (GL_R16UI, GL_RED, GL_UNSIGNED_SHORT),
+            F::RG16UI => (GL_RG16UI, GL_RG, GL_UNSIGNED_SHORT),
+            F::RGB16UI => (GL_RGB16UI, GL_RGB, GL_UNSIGNED_SHORT),
+            F::RGBA16UI => (GL_RGBA16UI, GL_RGBA, GL_UNSIGNED_SHORT),
+            F::R32UI => (GL_R32UI, GL_RED, GL_UNSIGNED_INT),
+            F::RG32UI => (GL_RG32UI, GL_RG, GL_UNSIGNED_INT),
+            F::RGB32UI => (GL_RGB32UI, GL_RGB, GL_UNSIGNED_INT),
+            F::RGBA32UI => (GL_RGBA32UI, GL_RGBA, GL_UNSIGNED_INT),
+            F::R16F => (GL_R16F, GL_RED, GL_FLOAT),
+            F::RG16F => (GL_RG16F, GL_RG, GL_FLOAT),
+            F::RGB16F => (GL_RGB16F, GL_RGB, GL_FLOAT),
+            F::RGBA16F => (GL_RGBA16F, GL_RGBA, GL_FLOAT),
+            F::R32F => (GL_R32F, GL_RED, GL_FLOAT),
+            F::RG32F => (GL_RG32F, GL_RG, GL_FLOAT),
+            F::RGB32F => (GL_RGB32F, GL_RGB, GL_FLOAT),
+            F::RGBA32F => (GL_RGBA32F, GL_RGBA, GL_FLOAT),
+            F::Depth16 => (GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT),
+            F::Depth32 => (GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_FLOAT),
         }
     }
 }
@@ -196,7 +234,7 @@ impl Texture {
             unsafe {
                 glGenRenderbuffers(1, &mut renderbuffer as *mut _);
                 glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer as _);
-                let internal_format = params.format.sized_internal_format();
+                let (internal_format, _, _) = params.format.into();
                 glRenderbufferStorageMultisample(
                     GL_RENDERBUFFER,
                     params.sample_count,
@@ -219,18 +257,6 @@ impl Texture {
             glGenTextures(1, &mut texture as *mut _);
             ctx.cache.bind_texture(0, params.kind.into(), texture);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // miniquad always uses row alignment of 1
-
-            if cfg!(not(target_arch = "wasm32")) {
-                // if not WASM
-                if params.format == TextureFormat::Alpha {
-                    // if alpha miniquad texture, the value on non-WASM is stored in red channel
-                    // swizzle red -> alpha
-                    glTexParameteri(params.kind.into(), GL_TEXTURE_SWIZZLE_A, GL_RED as _);
-                } else {
-                    // keep alpha -> alpha
-                    glTexParameteri(params.kind.into(), GL_TEXTURE_SWIZZLE_A, GL_ALPHA as _);
-                }
-            }
 
             match source {
                 TextureSource::Empty => {
@@ -378,18 +404,6 @@ impl Texture {
 
         unsafe {
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // miniquad always uses row alignment of 1
-
-            if cfg!(not(target_arch = "wasm32")) {
-                // if not WASM
-                if self.params.format == TextureFormat::Alpha {
-                    // if alpha miniquad texture, the value on non-WASM is stored in red channel
-                    // swizzle red -> alpha
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_RED as _);
-                } else {
-                    // keep alpha -> alpha
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ALPHA as _);
-                }
-            }
 
             glTexSubImage2D(
                 GL_TEXTURE_2D,
@@ -823,60 +837,20 @@ fn gl_info() -> ContextInfo {
         .to_str()
         .unwrap()
         .to_string();
-    //let gles2 = !gles3 && gl_version_string.contains("OpenGL ES");
-
-    let gl2 = gl_version_string.is_empty()
-        || gl_version_string.starts_with("2")
-        || gl_version_string.starts_with("OpenGL ES 2");
-    let webgl1 = gl_version_string == "WebGL 1.0";
-
-    let features = Features {
-        instancing: !gl2,
-        resolve_attachments: !webgl1 && !gl2,
-    };
 
     let mut glsl_support = GlslSupport::default();
+    glsl_support.v330 = gl_version_string.starts_with("4") || gl_version_string.starts_with("3.3");
+    glsl_support.v300es |= gl_version_string.contains("OpenGL ES 3");
+    glsl_support.v300es |= gl_version_string.contains("WebGL 2.0");
 
-    // this is not quite documented,
-    // but somehow even GL2.1 usually have all the compatibility extensions to support glsl100
-    // It was tested on really old windows machines, virtual machines etc. glsl100 always works!
-    glsl_support.v100 = true;
-
-    // on wasm miniquad always creates webgl1 context, with the only glsl available being version 100
-    #[cfg(target_arch = "wasm32")]
-    {
-        // on web, miniquad always loads EXT_shader_texture_lod and OES_standard_derivatives
-        glsl_support.v100_ext = true;
-
-        let webgl2 = gl_version_string.contains("WebGL 2.0");
-        if webgl2 {
-            glsl_support.v300es = true;
-        }
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        let gles3 = gl_version_string.contains("OpenGL ES 3");
-
-        if gles3 {
-            glsl_support.v300es = true;
-        }
-    }
-
-    // there is no gl3.4, so 4+ and 3.3 covers all modern OpenGL
-    if gl_version_string.starts_with("3.2") {
-        glsl_support.v150 = true; // MacOS is defaulting to 3.2 and GLSL 150
-    } else if gl_version_string.starts_with("4") || gl_version_string.starts_with("3.3") {
-        glsl_support.v330 = true;
-    // gl 3.0, 3.1, 3.2 maps to 1.30, 1.40, 1.50 glsl versions
-    } else if gl_version_string.starts_with("3") {
-        glsl_support.v130 = true;
-    }
+    let features = Features {
+        color_buffer_float: false,
+    };
 
     ContextInfo {
         backend: Backend::OpenGl,
-        gl_version_string,
         glsl_support,
+        gl_version_string,
         features,
     }
 }
@@ -1519,9 +1493,7 @@ impl RenderingBackend for GlContext {
                                 attribute.offset as *mut _,
                             ),
                         }
-                        if self.info.features.instancing {
-                            glVertexAttribDivisor(attr_index as GLuint, attribute.divisor as u32);
-                        }
+                        glVertexAttribDivisor(attr_index as GLuint, attribute.divisor as u32);
                         glEnableVertexAttribArray(attr_index as GLuint);
                     };
 
@@ -1722,12 +1694,6 @@ impl RenderingBackend for GlContext {
             self.cache.cur_pipeline.is_some(),
             "Drawing without any binded pipeline"
         );
-
-        if !self.info.features.instancing && num_instances != 1 {
-            eprintln!("Instanced rendering is not supported by the GPU");
-            eprintln!("Ignoring this draw call");
-            return;
-        }
 
         let pip = &self.pipelines[self.cache.cur_pipeline.unwrap().0];
         let primitive_type = pip.params.primitive_type.into();

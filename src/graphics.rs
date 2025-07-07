@@ -314,30 +314,94 @@ impl Display for ShaderError {
 
 impl Error for ShaderError {}
 
-/// List of all the possible formats of input data when uploading to texture.
-/// The list is built by intersection of texture formats supported by 3.3 core profile and webgl1.
 #[repr(u8)]
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum TextureFormat {
+    R8,
+    RG8,
     RGB8,
     RGBA8,
+    R8I,
+    RG8I,
+    RGB8I,
+    RGBA8I,
+    R16I,
+    RG16I,
+    RGB16I,
+    RGBA16I,
+    R32I,
+    RG32I,
+    RGB32I,
+    RGBA32I,
+    R8UI,
+    RG8UI,
+    RGB8UI,
+    RGBA8UI,
+    R16UI,
+    RG16UI,
+    RGB16UI,
+    RGBA16UI,
+    R32UI,
+    RG32UI,
+    RGB32UI,
+    RGBA32UI,
+    R16F,
+    RG16F,
+    RGB16F,
     RGBA16F,
-    Depth,
+    R32F,
+    RG32F,
+    RGB32F,
+    RGBA32F,
+    Depth16,
     Depth32,
-    Alpha,
 }
+
 impl TextureFormat {
     /// Returns the size in bytes of texture with `dimensions`.
     pub fn size(self, width: u32, height: u32) -> u32 {
+        use TextureFormat as F;
         let square = width * height;
-        match self {
-            TextureFormat::RGB8 => 3 * square,
-            TextureFormat::RGBA8 => 4 * square,
-            TextureFormat::RGBA16F => 8 * square,
-            TextureFormat::Depth => 2 * square,
-            TextureFormat::Depth32 => 4 * square,
-            TextureFormat::Alpha => 1 * square,
-        }
+        square * (match self {
+            F::R8 => 1,
+            F::RG8 => 2,
+            F::RGB8 => 3,
+            F::RGBA8 => 4,
+            F::R8I => 1,
+            F::RG8I => 2,
+            F::RGB8I => 3,
+            F::RGBA8I => 4,
+            F::R16I => 2,
+            F::RG16I => 4,
+            F::RGB16I => 6,
+            F::RGBA16I => 8,
+            F::R32I => 4,
+            F::RG32I => 8,
+            F::RGB32I => 12,
+            F::RGBA32I => 16,
+            F::R8UI => 1,
+            F::RG8UI => 2,
+            F::RGB8UI => 3,
+            F::RGBA8UI => 4,
+            F::R16UI => 2,
+            F::RG16UI => 4,
+            F::RGB16UI => 6,
+            F::RGBA16UI => 8,
+            F::R32UI => 4,
+            F::RG32UI => 8,
+            F::RGB32UI => 12,
+            F::RGBA32UI => 16,
+            F::R16F => 2,
+            F::RG16F => 4,
+            F::RGB16F => 6,
+            F::RGBA16F => 8,
+            F::R32F => 4,
+            F::RG32F => 8,
+            F::RGB32F => 12,
+            F::RGBA32F => 16,
+            F::Depth16 => 2,
+            F::Depth32 => 4,
+        })
     }
 }
 
@@ -574,21 +638,13 @@ pub const MAX_SHADERSTAGE_IMAGES: usize = 12;
 
 #[derive(Clone, Debug)]
 pub struct Features {
-    pub instancing: bool,
-    /// Does current rendering backend support automatic resolve of
-    /// multisampled render passes on end_render_pass.
-    /// Would be false on WebGl1 and GL2.
-    ///
-    /// With resolve_attachments: false, not-none resolve_img in new_render_pass will
-    /// result in a runtime panic.
-    pub resolve_attachments: bool,
+    pub color_buffer_float: bool,
 }
 
 impl Default for Features {
     fn default() -> Features {
         Features {
-            instancing: true,
-            resolve_attachments: true,
+            color_buffer_float: true,
         }
     }
 }
@@ -1055,12 +1111,8 @@ unsafe impl Sync for RawId {}
 
 #[derive(Clone, Debug, Default)]
 pub struct GlslSupport {
-    pub v130: bool,
-    pub v150: bool,
-    pub v330: bool,
     pub v300es: bool,
-    pub v100_ext: bool,
-    pub v100: bool,
+    pub v330: bool,
 }
 
 #[derive(PartialEq, Clone, Copy, Debug)]
@@ -1090,9 +1142,7 @@ impl ContextInfo {
     pub fn has_integer_attributes(&self) -> bool {
         match self.backend {
             Backend::Metal => true,
-            Backend::OpenGl => {
-                self.glsl_support.v150 | self.glsl_support.v300es | self.glsl_support.v330
-            }
+            Backend::OpenGl => self.glsl_support.v300es | self.glsl_support.v330,
         }
     }
 }
