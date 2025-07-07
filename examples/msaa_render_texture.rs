@@ -37,13 +37,7 @@ impl Stage {
             sample_count: 4,
             ..Default::default()
         });
-        // Without this check, new_render_pass_mrt might panic on GL2/WebGl1.
-        // It is recommended to handle it and create a normal,
-        // non-msaa render pass instead.
-        assert!(
-            ctx.info().features.resolve_attachments,
-            "MSAA render targets are not supported on current rendering backend!"
-        );
+
         let offscreen_pass =
             ctx.new_render_pass_mrt(&[color_img], Some(&[color_resolve_img]), Some(depth_img));
 
@@ -251,7 +245,6 @@ impl EventHandler for Stage {
 fn main() {
     let mut conf = conf::Conf::default();
     let metal = std::env::args().nth(1).as_deref() == Some("metal");
-    conf.platform.webgl_version = conf::WebGLVersion::WebGL2;
     conf.platform.apple_gfx_api = if metal {
         conf::AppleGfxApi::Metal
     } else {

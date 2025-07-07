@@ -87,20 +87,6 @@ pub enum AppleGfxApi {
     Metal,
 }
 
-/// On the Web, specify which WebGL version to use.
-///
-/// While miniquad itself only uses WebGL 1 features, a WebGL 2 context allows to:
-/// - Use GLES3 shaders.
-/// - Do raw WebGL2 OpenGL calls.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
-pub enum WebGLVersion {
-    /// Use WebGL 1.0. This is the default choice.
-    #[default]
-    WebGL1,
-    /// Use WebGL 2.0.
-    WebGL2,
-}
-
 /// On Wayland, specify how to draw client-side decoration (CSD) if server-side decoration (SSD) is
 /// not supported (e.g., on GNOME).
 ///
@@ -125,9 +111,6 @@ pub struct Platform {
 
     /// Specifies which Linux window system (X11 or Wayland) is preferred or used.
     pub linux_backend: LinuxBackend,
-
-    /// Specifies which WebGL version to use on the Web (1.0. or 2.0).
-    pub webgl_version: WebGLVersion,
 
     /// Defines which rendering API to use on Apple platforms (Metal or OpenGL).
     pub apple_gfx_api: AppleGfxApi,
@@ -177,7 +160,6 @@ impl Default for Platform {
             linux_x11_gl: LinuxX11Gl::default(),
             linux_backend: LinuxBackend::default(),
             apple_gfx_api: AppleGfxApi::default(),
-            webgl_version: WebGLVersion::default(),
             blocking_event_loop: false,
             swap_interval: None,
             framebuffer_alpha: false,

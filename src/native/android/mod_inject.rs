@@ -1,7 +1,7 @@
 // Imagine crate A depending on miniquad.
 // On android A is being compiled to .so and this .so is being loaded
 // by "System.loadLibrary("")" java call.
-// extern "C" functions from miniquad are right there, in the .so. But somehow
+// unsafe extern "C" functions from miniquad are right there, in the .so. But somehow
 // they are invisible for JNI unless they are declared in the A itself,
 // not in the A's dependencies.
 //
@@ -16,7 +16,7 @@
 // or ndk_sys as a crate dependency.. so we cant use anything from them.
 
 
-#[no_mangle]
-pub extern "C" fn quad_main() {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn quad_main() {
     let _ = super::main();
 }

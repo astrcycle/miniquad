@@ -58,11 +58,11 @@ pub const ERROR_INVALID_PROFILE_ARB: u32 = 0x2096;
 pub const ERROR_INCOMPATIBLE_DEVICE_CONTEXTS_ARB: u32 = 0x2054;
 
 type GetPixelFormatAttribivARB =
-    extern "system" fn(_: HDC, _: INT, _: INT, _: UINT, _: *const INT, _: *mut INT) -> bool;
-type GetExtensionsStringEXT = extern "system" fn() -> *const i8;
-type GetExtensionsStringARB = extern "system" fn(_: HDC) -> *const i8;
-type CreateContextAttribsARB = extern "system" fn(_: HDC, _: HGLRC, _: *const INT) -> HGLRC;
-type SwapIntervalEXT = extern "system" fn(_: INT) -> bool;
+    unsafe extern "system" fn(_: HDC, _: INT, _: INT, _: UINT, _: *const INT, _: *mut INT) -> bool;
+type GetExtensionsStringEXT = unsafe extern "system" fn() -> *const i8;
+type GetExtensionsStringARB = unsafe extern "system" fn(_: HDC) -> *const i8;
+type CreateContextAttribsARB = unsafe extern "system" fn(_: HDC, _: HGLRC, _: *const INT) -> HGLRC;
+type SwapIntervalEXT = unsafe extern "system" fn(_: INT) -> bool;
 
 #[derive(Copy, Clone)]
 pub struct GlFbconfig {

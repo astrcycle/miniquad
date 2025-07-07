@@ -353,7 +353,7 @@ pub enum TextureFormat {
     RG32F,
     RGB32F,
     RGBA32F,
-    Depth16,
+    Depth,
     Depth32,
 }
 
@@ -399,7 +399,7 @@ impl TextureFormat {
             F::RG32F => 8,
             F::RGB32F => 12,
             F::RGBA32F => 16,
-            F::Depth16 => 2,
+            F::Depth => 2,
             F::Depth32 => 4,
         })
     }
@@ -1414,7 +1414,5 @@ pub trait RenderingBackend {
     /// + `num_elements` specifies length of the slice of `index_buffer` to draw.
     /// + `num_instances` specifies how many instances should be rendered.
     ///
-    /// NOTE: num_instances > 1 might be not supported by the GPU (gl2.1 and gles2).
-    /// `features.instancing` check is required.
     fn draw(&self, base_element: i32, num_elements: i32, num_instances: i32);
 }

@@ -2,11 +2,11 @@
 
 use winapi::shared::{minwindef::*, ntdef::*, windef::*};
 
-pub type wglCreateContext = extern "system" fn(_: HDC) -> HGLRC;
-pub type wglDeleteContext = extern "system" fn(_: HGLRC) -> bool;
-pub type wglGetProcAddress = extern "system" fn(_: LPCSTR) -> PROC;
-pub type wglGetCurrentDC = extern "system" fn() -> HDC;
-pub type wglMakeCurrent = extern "system" fn(_: HDC, _: HGLRC) -> bool;
+pub type wglCreateContext = unsafe extern "system" fn(_: HDC) -> HGLRC;
+pub type wglDeleteContext = unsafe extern "system" fn(_: HGLRC) -> bool;
+pub type wglGetProcAddress = unsafe extern "system" fn(_: LPCSTR) -> PROC;
+pub type wglGetCurrentDC = unsafe extern "system" fn() -> HDC;
+pub type wglMakeCurrent = unsafe extern "system" fn(_: HDC, _: HGLRC) -> bool;
 
 pub struct LibOpengl32 {
     pub module: crate::native::module::Module,

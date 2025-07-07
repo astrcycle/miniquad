@@ -16,7 +16,7 @@ pub use ndk_sys;
 
 pub mod ndk_utils;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn JNI_OnLoad(
     vm: *mut ndk_sys::JavaVM,
     _: std::ffi::c_void,
@@ -26,7 +26,7 @@ pub unsafe extern "C" fn JNI_OnLoad(
     ndk_sys::JNI_VERSION_1_6 as _
 }
 
-extern "C" {
+unsafe extern "C" {
     fn quad_main();
 }
 
@@ -515,8 +515,8 @@ where
     });
 }
 
-#[no_mangle]
-extern "C" fn jni_on_load(vm: *mut std::ffi::c_void) {
+#[unsafe(no_mangle)]
+unsafe extern "C" fn jni_on_load(vm: *mut std::ffi::c_void) {
     unsafe {
         VM = vm as _;
     }
@@ -528,7 +528,7 @@ unsafe fn create_native_window(surface: ndk_sys::jobject) -> *mut ndk_sys::ANati
     ndk_sys::ANativeWindow_fromSurface(env, surface)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn Java_quad_1native_QuadNative_activityOnCreate(
     _: *mut ndk_sys::JNIEnv,
     _: ndk_sys::jobject,
@@ -539,7 +539,7 @@ pub unsafe extern "C" fn Java_quad_1native_QuadNative_activityOnCreate(
     quad_main();
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 unsafe extern "C" fn Java_quad_1native_QuadNative_activityOnResume(
     _: *mut ndk_sys::JNIEnv,
     _: ndk_sys::jobject,
@@ -547,7 +547,7 @@ unsafe extern "C" fn Java_quad_1native_QuadNative_activityOnResume(
     send_message(Message::Resume);
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 unsafe extern "C" fn Java_quad_1native_QuadNative_activityOnPause(
     _: *mut ndk_sys::JNIEnv,
     _: ndk_sys::jobject,
@@ -555,7 +555,7 @@ unsafe extern "C" fn Java_quad_1native_QuadNative_activityOnPause(
     send_message(Message::Pause);
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 unsafe extern "C" fn Java_quad_1native_QuadNative_activityOnDestroy(
     _: *mut ndk_sys::JNIEnv,
     _: ndk_sys::jobject,
@@ -563,8 +563,8 @@ unsafe extern "C" fn Java_quad_1native_QuadNative_activityOnDestroy(
     send_message(Message::Destroy);
 }
 
-#[no_mangle]
-extern "C" fn Java_quad_1native_QuadNative_surfaceOnSurfaceCreated(
+#[unsafe(no_mangle)]
+unsafe extern "C" fn Java_quad_1native_QuadNative_surfaceOnSurfaceCreated(
     _: *mut ndk_sys::JNIEnv,
     _: ndk_sys::jobject,
     surface: ndk_sys::jobject,
@@ -573,16 +573,16 @@ extern "C" fn Java_quad_1native_QuadNative_surfaceOnSurfaceCreated(
     send_message(Message::SurfaceCreated { window });
 }
 
-#[no_mangle]
-extern "C" fn Java_quad_1native_QuadNative_surfaceOnSurfaceDestroyed(
+#[unsafe(no_mangle)]
+unsafe extern "C" fn Java_quad_1native_QuadNative_surfaceOnSurfaceDestroyed(
     _: *mut ndk_sys::JNIEnv,
     _: ndk_sys::jobject,
 ) {
     send_message(Message::SurfaceDestroyed);
 }
 
-#[no_mangle]
-extern "C" fn Java_quad_1native_QuadNative_surfaceOnSurfaceChanged(
+#[unsafe(no_mangle)]
+unsafe extern "C" fn Java_quad_1native_QuadNative_surfaceOnSurfaceChanged(
     _: *mut ndk_sys::JNIEnv,
     _: ndk_sys::jobject,
     surface: ndk_sys::jobject,
@@ -598,8 +598,8 @@ extern "C" fn Java_quad_1native_QuadNative_surfaceOnSurfaceChanged(
     });
 }
 
-#[no_mangle]
-extern "C" fn Java_quad_1native_QuadNative_surfaceOnTouch(
+#[unsafe(no_mangle)]
+unsafe extern "C" fn Java_quad_1native_QuadNative_surfaceOnTouch(
     _: *mut ndk_sys::JNIEnv,
     _: ndk_sys::jobject,
     touch_id: ndk_sys::jint,
@@ -623,8 +623,8 @@ extern "C" fn Java_quad_1native_QuadNative_surfaceOnTouch(
     });
 }
 
-#[no_mangle]
-extern "C" fn Java_quad_1native_QuadNative_surfaceOnKeyDown(
+#[unsafe(no_mangle)]
+unsafe extern "C" fn Java_quad_1native_QuadNative_surfaceOnKeyDown(
     _: *mut ndk_sys::JNIEnv,
     _: ndk_sys::jobject,
     keycode: ndk_sys::jint,
@@ -634,8 +634,8 @@ extern "C" fn Java_quad_1native_QuadNative_surfaceOnKeyDown(
     send_message(Message::KeyDown { keycode });
 }
 
-#[no_mangle]
-extern "C" fn Java_quad_1native_QuadNative_surfaceOnKeyUp(
+#[unsafe(no_mangle)]
+unsafe extern "C" fn Java_quad_1native_QuadNative_surfaceOnKeyUp(
     _: *mut ndk_sys::JNIEnv,
     _: ndk_sys::jobject,
     keycode: ndk_sys::jint,
@@ -645,8 +645,8 @@ extern "C" fn Java_quad_1native_QuadNative_surfaceOnKeyUp(
     send_message(Message::KeyUp { keycode });
 }
 
-#[no_mangle]
-extern "C" fn Java_quad_1native_QuadNative_surfaceOnCharacter(
+#[unsafe(no_mangle)]
+unsafe extern "C" fn Java_quad_1native_QuadNative_surfaceOnCharacter(
     _: *mut ndk_sys::JNIEnv,
     _: ndk_sys::jobject,
     character: ndk_sys::jint,
@@ -670,7 +670,7 @@ pub struct android_asset {
 // According to documentation, AAssetManager_fromJava is as available as an
 // AAssetManager_open, which was used before
 // For some reason it is missing fron ndk_sys binding
-extern "C" {
+unsafe extern "C" {
     pub fn AAssetManager_fromJava(
         env: *mut ndk_sys::JNIEnv,
         assetManager: ndk_sys::jobject,

@@ -135,7 +135,7 @@ impl From<TextureFormat> for (GLenum, GLenum, GLenum) {
             F::RG32F => (GL_RG32F, GL_RG, GL_FLOAT),
             F::RGB32F => (GL_RGB32F, GL_RGB, GL_FLOAT),
             F::RGBA32F => (GL_RGBA32F, GL_RGBA, GL_FLOAT),
-            F::Depth16 => (GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT),
+            F::Depth => (GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT),
             F::Depth32 => (GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_FLOAT),
         }
     }

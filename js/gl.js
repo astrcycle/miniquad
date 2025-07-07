@@ -24,74 +24,11 @@ var high_dpi = false;
 // if false, requestAnimationFrame will be called at the end of each frame
 var blocking_event_loop = false;
 
-function init_webgl(version) {
-    if (version == 1) {
-        gl = canvas.getContext("webgl");
-
-        function acquireVertexArrayObjectExtension(ctx) {
-            // Extension available in WebGL 1 from Firefox 25 and WebKit 536.28/desktop Safari 6.0.3 onwards. Core feature in WebGL 2.
-            var ext = ctx.getExtension('OES_vertex_array_object');
-            if (ext) {
-                ctx['createVertexArray'] = function () { return ext['createVertexArrayOES'](); };
-                ctx['deleteVertexArray'] = function (vao) { ext['deleteVertexArrayOES'](vao); };
-                ctx['bindVertexArray'] = function (vao) { ext['bindVertexArrayOES'](vao); };
-                ctx['isVertexArray'] = function (vao) { return ext['isVertexArrayOES'](vao); };
-            }
-            else {
-                alert("Unable to get OES_vertex_array_object extension");
-            }
-        }
-
-
-        function acquireInstancedArraysExtension(ctx) {
-            // Extension available in WebGL 1 from Firefox 26 and Google Chrome 30 onwards. Core feature in WebGL 2.
-            var ext = ctx.getExtension('ANGLE_instanced_arrays');
-            if (ext) {
-                ctx['vertexAttribDivisor'] = function (index, divisor) { ext['vertexAttribDivisorANGLE'](index, divisor); };
-                ctx['drawArraysInstanced'] = function (mode, first, count, primcount) { ext['drawArraysInstancedANGLE'](mode, first, count, primcount); };
-                ctx['drawElementsInstanced'] = function (mode, count, type, indices, primcount) { ext['drawElementsInstancedANGLE'](mode, count, type, indices, primcount); };
-            }
-        }
-
-        function acquireDisjointTimerQueryExtension(ctx) {
-            var ext = ctx.getExtension('EXT_disjoint_timer_query');
-            if (ext) {
-                ctx['createQuery'] = function () { return ext['createQueryEXT'](); };
-                ctx['beginQuery'] = function (target, query) { return ext['beginQueryEXT'](target, query); };
-                ctx['endQuery'] = function (target) { return ext['endQueryEXT'](target); };
-                ctx['deleteQuery'] = function (query) { ext['deleteQueryEXT'](query); };
-                ctx['getQueryObject'] = function (query, pname) { return ext['getQueryObjectEXT'](query, pname); };
-            }
-        }
-
-        function acquireDrawBuffers(ctx) {
-            var ext = ctx.getExtension('WEBGL_draw_buffers');
-            if (ext) {
-                ctx['drawBuffers'] = function (bufs) { return ext['drawBuffersWEBGL'](bufs); };
-            }
-        }
-
-        try {
-            gl.getExtension("EXT_shader_texture_lod");
-            gl.getExtension("OES_standard_derivatives");
-        } catch (e) {
-            console.warn(e);
-        }
-
-        acquireVertexArrayObjectExtension(gl);
-        acquireInstancedArraysExtension(gl);
-        acquireDisjointTimerQueryExtension(gl);
-        acquireDrawBuffers(gl);
-
-        // https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_depth_texture
-        if (gl.getExtension('WEBGL_depth_texture') == null) {
-            alert("Cant initialize WEBGL_depth_texture extension");
-        }
-    } else {
-        gl = canvas.getContext("webgl2");
-    }
+function init_webgl() {
+    gl = canvas.getContext("webgl2");
+    gl.getExtension("EXT_color_buffer_float");
     if (gl === null) {
-        alert("Unable to initialize WebGL. Your browser or machine may not support it.");
+        alert("Unable to initialize WebGL2. Your browser or machine may not support it.");
     }
 }
 

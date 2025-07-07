@@ -66,13 +66,13 @@ impl Drop for RcObjcId {
 }
 
 #[link(name = "system")]
-extern "C" {
+unsafe extern "C" {
     pub static _NSConcreteStackBlock: [*const c_void; 32];
     pub static _NSConcreteBogusBlock: [*const c_void; 32];
 }
 
 #[link(name = "Foundation", kind = "framework")]
-extern "C" {
+unsafe extern "C" {
     pub static NSRunLoopCommonModes: ObjcId;
     pub static NSDefaultRunLoopMode: ObjcId;
     pub static NSEventTrackingRunLoopMode: ObjcId;
@@ -96,7 +96,7 @@ extern "C" {
 }
 
 #[link(name = "ImageIO", kind = "framework")]
-extern "C" {
+unsafe extern "C" {
     pub static kUTTypePNG: ObjcId;
     pub fn CGImageDestinationCreateWithURL(
         url: ObjcId,
@@ -110,7 +110,7 @@ extern "C" {
 
 #[cfg(target_os = "macos")]
 #[link(name = "AppKit", kind = "framework")]
-extern "C" {
+unsafe extern "C" {
     pub static NSPasteboardURLReadingFileURLsOnlyKey: ObjcId;
     pub static NSTrackingArea: ObjcId;
     pub static NSStringPboardType: ObjcId;
@@ -119,7 +119,7 @@ extern "C" {
 
 #[cfg(target_os = "ios")]
 #[link(name = "GLKit", kind = "framework")]
-extern "C" {}
+unsafe extern "C" {}
 
 pub const GLKViewDrawableColorFormatRGBA8888: i32 = 0;
 
@@ -136,7 +136,7 @@ pub enum GLKViewDrawableStencilFormat {
 }
 #[cfg(target_os = "ios")]
 #[link(name = "UIKit", kind = "framework")]
-extern "C" {
+unsafe extern "C" {
     pub static UIKeyboardDidShowNotification: ObjcId;
     pub static UIKeyboardWillHideNotification: ObjcId;
     pub static UIKeyboardDidChangeFrameNotification: ObjcId;
@@ -149,7 +149,7 @@ extern "C" {
 }
 
 #[link(name = "Vision", kind = "framework")]
-extern "C" {
+unsafe extern "C" {
     pub static VNImageRequestHandler: ObjcId;
     pub static VNRecognizeTextRequest: ObjcId;
 }
@@ -162,7 +162,7 @@ pub const kCGMouseEventClickState: u32 = 1;
 type DataReleaseCallback = unsafe extern "C" fn(*mut c_void, *const c_void, usize);
 
 #[link(name = "CoreGraphics", kind = "framework")]
-extern "C" {
+unsafe extern "C" {
     pub fn CGEventSourceCreate(state_id: u32) -> ObjcId;
     pub fn CGEventSetIntegerValueField(event: ObjcId, field: u32, value: u64);
     pub fn CGEventCreateMouseEvent(
@@ -226,7 +226,7 @@ pub const kCGImageAlphaLast: u32 = 3;
 pub const kCGRenderingIntentDefault: u32 = 0;
 
 #[link(name = "Metal", kind = "framework")]
-extern "C" {
+unsafe extern "C" {
     pub fn MTLCreateSystemDefaultDevice() -> ObjcId;
     #[cfg(not(target_os = "ios"))]
     pub fn MTLCopyAllDevices() -> ObjcId; //TODO: Array

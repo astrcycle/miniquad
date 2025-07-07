@@ -158,23 +158,23 @@ pub fn define_glk_or_mtk_view(superclass: &Class) -> *const Class {
             }
         }
     }
-    extern "C" fn touches_began(this: &Object, _: Sel, _: ObjcId, event: ObjcId) {
+    unsafe extern "C" fn touches_began(this: &Object, _: Sel, _: ObjcId, event: ObjcId) {
         on_touch(this, event, TouchPhase::Started);
     }
 
-    extern "C" fn touches_moved(this: &Object, _: Sel, _: ObjcId, event: ObjcId) {
+    unsafe extern "C" fn touches_moved(this: &Object, _: Sel, _: ObjcId, event: ObjcId) {
         on_touch(this, event, TouchPhase::Moved);
     }
 
-    extern "C" fn touches_ended(this: &Object, _: Sel, _: ObjcId, event: ObjcId) {
+    unsafe extern "C" fn touches_ended(this: &Object, _: Sel, _: ObjcId, event: ObjcId) {
         on_touch(this, event, TouchPhase::Ended);
     }
 
-    extern "C" fn touches_canceled(this: &Object, _: Sel, _: ObjcId, event: ObjcId) {
+    unsafe extern "C" fn touches_canceled(this: &Object, _: Sel, _: ObjcId, event: ObjcId) {
         on_touch(this, event, TouchPhase::Cancelled);
     }
 
-    extern "C" fn process_message(this: &Object, _: Sel, _: ObjcId) {
+    unsafe extern "C" fn process_message(this: &Object, _: Sel, _: ObjcId) {
         let payload = get_window_payload(this);
         if payload.event_handler.is_none() {
             payload.init_event_handler();
@@ -248,26 +248,26 @@ pub fn define_glk_or_mtk_view(superclass: &Class) -> *const Class {
     }
 
     unsafe {
-        decl.add_method(sel!(isOpaque), yes as extern "C" fn(&Object, Sel) -> BOOL);
+        decl.add_method(sel!(isOpaque), yes as unsafe extern "C" fn(&Object, Sel) -> BOOL);
         decl.add_method(
             sel!(touchesBegan: withEvent:),
-            touches_began as extern "C" fn(&Object, Sel, ObjcId, ObjcId),
+            touches_began as unsafe extern "C" fn(&Object, Sel, ObjcId, ObjcId),
         );
         decl.add_method(
             sel!(touchesMoved: withEvent:),
-            touches_moved as extern "C" fn(&Object, Sel, ObjcId, ObjcId),
+            touches_moved as unsafe extern "C" fn(&Object, Sel, ObjcId, ObjcId),
         );
         decl.add_method(
             sel!(touchesEnded: withEvent:),
-            touches_ended as extern "C" fn(&Object, Sel, ObjcId, ObjcId),
+            touches_ended as unsafe extern "C" fn(&Object, Sel, ObjcId, ObjcId),
         );
         decl.add_method(
             sel!(touchesCanceled: withEvent:),
-            touches_canceled as extern "C" fn(&Object, Sel, ObjcId, ObjcId),
+            touches_canceled as unsafe extern "C" fn(&Object, Sel, ObjcId, ObjcId),
         );
         decl.add_method(
             sel!(processMessage:),
-            process_message as extern "C" fn(&Object, Sel, ObjcId),
+            process_message as unsafe extern "C" fn(&Object, Sel, ObjcId),
         );
     }
 
@@ -280,7 +280,7 @@ unsafe fn get_proc_address(name: *const u8) -> Option<unsafe extern "C" fn()> {
         use std::ffi::{c_char, c_int, c_void};
 
         pub const RTLD_LAZY: c_int = 1;
-        extern "C" {
+        unsafe extern "C" {
             pub fn dlopen(filename: *const c_char, flag: c_int) -> *mut c_void;
             pub fn dlsym(handle: *mut c_void, symbol: *const c_char) -> *mut c_void;
         }
@@ -306,7 +306,7 @@ unsafe fn get_proc_address(name: *const u8) -> Option<unsafe extern "C" fn()> {
 pub fn define_glk_or_mtk_view_dlg(superclass: &Class) -> *const Class {
     let mut decl = ClassDecl::new("QuadViewDlg", superclass).unwrap();
 
-    extern "C" fn draw_in_rect(this: &Object, _: Sel, _: ObjcId, _: ObjcId) {
+    unsafe extern "C" fn draw_in_rect(this: &Object, _: Sel, _: ObjcId, _: ObjcId) {
         let payload = get_window_payload(this);
         if payload.event_handler.is_none() {
             payload.init_event_handler();
@@ -351,19 +351,19 @@ pub fn define_glk_or_mtk_view_dlg(superclass: &Class) -> *const Class {
         }
     }
     // wrapper to make sel! macros happy
-    extern "C" fn draw_in_rect2(this: &Object, s: Sel, o: ObjcId) {
+    unsafe extern "C" fn draw_in_rect2(this: &Object, s: Sel, o: ObjcId) {
         draw_in_rect(this, s, o, nil);
     }
 
     unsafe {
         decl.add_method(
             sel!(glkView: drawInRect:),
-            draw_in_rect as extern "C" fn(&Object, Sel, ObjcId, ObjcId),
+            draw_in_rect as unsafe extern "C" fn(&Object, Sel, ObjcId, ObjcId),
         );
 
         decl.add_method(
             sel!(drawInMTKView:),
-            draw_in_rect2 as extern "C" fn(&Object, Sel, ObjcId),
+            draw_in_rect2 as unsafe extern "C" fn(&Object, Sel, ObjcId),
         );
     }
 
@@ -473,7 +473,7 @@ pub fn define_app_delegate() -> *const Class {
     let superclass = class!(NSObject);
     let mut decl = ClassDecl::new("NSAppDelegate", superclass).unwrap();
 
-    extern "C" fn did_finish_launching_with_options(
+    unsafe extern "C" fn did_finish_launching_with_options(
         _: &Object,
         _: Sel,
         _: ObjcId,
@@ -665,11 +665,11 @@ pub fn define_app_delegate() -> *const Class {
         YES
     }
 
-    extern "C" fn application_did_become_active(_: &Object, _: Sel, _: ObjcId) {
+    unsafe extern "C" fn application_did_become_active(_: &Object, _: Sel, _: ObjcId) {
         send_message(Message::Resume);
     }
 
-    extern "C" fn application_will_resign_active(_: &Object, _: Sel, _: ObjcId) {
+    unsafe extern "C" fn application_will_resign_active(_: &Object, _: Sel, _: ObjcId) {
         send_message(Message::Pause);
     }
 
@@ -677,15 +677,15 @@ pub fn define_app_delegate() -> *const Class {
         decl.add_method(
             sel!(application: didFinishLaunchingWithOptions:),
             did_finish_launching_with_options
-                as extern "C" fn(&Object, Sel, ObjcId, ObjcId) -> BOOL,
+                as unsafe extern "C" fn(&Object, Sel, ObjcId, ObjcId) -> BOOL,
         );
         decl.add_method(
             sel!(applicationDidBecomeActive:),
-            application_did_become_active as extern "C" fn(&Object, Sel, ObjcId),
+            application_did_become_active as unsafe extern "C" fn(&Object, Sel, ObjcId),
         );
         decl.add_method(
             sel!(applicationWillResignActive:),
-            application_will_resign_active as extern "C" fn(&Object, Sel, ObjcId),
+            application_will_resign_active as unsafe extern "C" fn(&Object, Sel, ObjcId),
         );
     }
     decl.register()
@@ -697,11 +697,11 @@ fn define_textfield_dlg() -> *const Class {
 
     // those 3 callbacks are for resizing the canvas when keyboard is opened
     // which is not currenlty supported by miniquad
-    extern "C" fn keyboard_was_shown(_: &Object, _: Sel, _notif: ObjcId) {}
-    extern "C" fn keyboard_will_be_hidden(_: &Object, _: Sel, _notif: ObjcId) {}
-    extern "C" fn keyboard_did_change_frame(_: &Object, _: Sel, _notif: ObjcId) {}
+    unsafe extern "C" fn keyboard_was_shown(_: &Object, _: Sel, _notif: ObjcId) {}
+    unsafe extern "C" fn keyboard_will_be_hidden(_: &Object, _: Sel, _notif: ObjcId) {}
+    unsafe extern "C" fn keyboard_did_change_frame(_: &Object, _: Sel, _notif: ObjcId) {}
 
-    extern "C" fn should_change_characters_in_range(
+    unsafe extern "C" fn should_change_characters_in_range(
         _: &Object,
         _: Sel,
         _textfield: ObjcId,
@@ -757,20 +757,20 @@ fn define_textfield_dlg() -> *const Class {
     unsafe {
         decl.add_method(
             sel!(keyboardWasShown:),
-            keyboard_was_shown as extern "C" fn(&Object, Sel, ObjcId),
+            keyboard_was_shown as unsafe extern "C" fn(&Object, Sel, ObjcId),
         );
         decl.add_method(
             sel!(keyboardWillBeHidden:),
-            keyboard_will_be_hidden as extern "C" fn(&Object, Sel, ObjcId),
+            keyboard_will_be_hidden as unsafe extern "C" fn(&Object, Sel, ObjcId),
         );
         decl.add_method(
             sel!(keyboardDidChangeFrame:),
-            keyboard_did_change_frame as extern "C" fn(&Object, Sel, ObjcId),
+            keyboard_did_change_frame as unsafe extern "C" fn(&Object, Sel, ObjcId),
         );
         decl.add_method(
             sel!(textField: shouldChangeCharactersInRange: replacementString:),
             should_change_characters_in_range
-                as extern "C" fn(&Object, Sel, ObjcId, NSRange, ObjcId) -> BOOL,
+                as unsafe extern "C" fn(&Object, Sel, ObjcId, NSRange, ObjcId) -> BOOL,
         );
     }
     decl.add_ivar::<*mut c_void>("display_ptr");

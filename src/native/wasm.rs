@@ -65,12 +65,8 @@ where
         }));
     }
 
-    let version = match conf.platform.webgl_version {
-        crate::conf::WebGLVersion::WebGL1 => 1,
-        crate::conf::WebGLVersion::WebGL2 => 2,
-    };
     unsafe {
-        init_webgl(version);
+        init_webgl();
     }
 
     // setup initial canvas size
@@ -107,7 +103,7 @@ pub unsafe fn sapp_height() -> ::core::ffi::c_int {
     canvas_height()
 }
 
-extern "C" {
+unsafe extern "C" {
     pub fn setup_canvas_size(high_dpi: bool);
     pub fn run_animation_loop(blocking: bool);
     pub fn canvas_width() -> i32;
@@ -136,7 +132,7 @@ extern "C" {
     pub fn sapp_is_fullscreen() -> bool;
     pub fn sapp_set_window_size(new_width: u32, new_height: u32);
     pub fn sapp_schedule_update();
-    pub fn init_webgl(version: i32);
+    pub fn init_webgl();
     pub fn now() -> f64;
 }
 
@@ -180,13 +176,13 @@ pub unsafe fn update_cursor() {
 
 // gl.js version required to be shipped alongside this rust code.
 // "crate_version" is a misleading, but it can't be changed for legacy reasons.
-#[no_mangle]
-pub extern "C" fn crate_version() -> u32 {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn crate_version() -> u32 {
     2
 }
 
-#[no_mangle]
-pub extern "C" fn allocate_vec_u8(len: usize) -> *mut u8 {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn allocate_vec_u8(len: usize) -> *mut u8 {
     let mut string = vec![0u8; len];
     let ptr = string.as_mut_ptr();
     string.leak();
@@ -211,15 +207,15 @@ impl crate::native::Clipboard for Clipboard {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn on_clipboard_paste(msg: *mut u8, len: usize) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn on_clipboard_paste(msg: *mut u8, len: usize) {
     let msg = unsafe { String::from_raw_parts(msg, len, len) };
 
     *CLIPBOARD.get_or_init(|| Mutex::new(None)).lock().unwrap() = Some(msg);
 }
 
-#[no_mangle]
-pub extern "C" fn frame() {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn frame() {
     REQUESTS.with(|r| {
         while let Ok(request) = r.borrow_mut().as_mut().unwrap().try_recv() {
             match request {
@@ -241,22 +237,22 @@ pub extern "C" fn frame() {
     });
 }
 
-#[no_mangle]
-pub extern "C" fn mouse_move(x: i32, y: i32) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mouse_move(x: i32, y: i32) {
     tl_event_handler(|event_handler| {
         event_handler.mouse_motion_event(x as _, y as _);
     });
 }
 
-#[no_mangle]
-pub extern "C" fn raw_mouse_move(dx: i32, dy: i32) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn raw_mouse_move(dx: i32, dy: i32) {
     tl_event_handler(|event_handler| {
         event_handler.raw_mouse_motion(dx as _, dy as _);
     });
 }
 
-#[no_mangle]
-pub extern "C" fn mouse_down(x: i32, y: i32, btn: i32) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mouse_down(x: i32, y: i32, btn: i32) {
     let btn = keycodes::translate_mouse_button(btn);
 
     tl_event_handler(|event_handler| {
@@ -264,8 +260,8 @@ pub extern "C" fn mouse_down(x: i32, y: i32, btn: i32) {
     });
 }
 
-#[no_mangle]
-pub extern "C" fn mouse_up(x: i32, y: i32, btn: i32) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mouse_up(x: i32, y: i32, btn: i32) {
     let btn = keycodes::translate_mouse_button(btn);
 
     tl_event_handler(|event_handler| {
@@ -273,15 +269,15 @@ pub extern "C" fn mouse_up(x: i32, y: i32, btn: i32) {
     });
 }
 
-#[no_mangle]
-pub extern "C" fn mouse_wheel(dx: i32, dy: i32) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mouse_wheel(dx: i32, dy: i32) {
     tl_event_handler(|event_handler| {
         event_handler.mouse_wheel_event(dx as _, dy as _);
     });
 }
 
-#[no_mangle]
-pub extern "C" fn key_down(key: u32, modifiers: u32, repeat: bool) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn key_down(key: u32, modifiers: u32, repeat: bool) {
     let key = keycodes::translate_keycode(key as _);
     let mods = keycodes::translate_mod(modifiers as _);
 
@@ -290,8 +286,8 @@ pub extern "C" fn key_down(key: u32, modifiers: u32, repeat: bool) {
     });
 }
 
-#[no_mangle]
-pub extern "C" fn key_press(key: u32) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn key_press(key: u32) {
     if let Some(key) = char::from_u32(key) {
         tl_event_handler(|event_handler| {
             event_handler.char_event(key, crate::KeyMods::default(), false);
@@ -299,8 +295,8 @@ pub extern "C" fn key_press(key: u32) {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn key_up(key: u32, modifiers: u32) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn key_up(key: u32, modifiers: u32) {
     let key = keycodes::translate_keycode(key as _);
     let mods = keycodes::translate_mod(modifiers as _);
 
@@ -309,8 +305,8 @@ pub extern "C" fn key_up(key: u32, modifiers: u32) {
     });
 }
 
-#[no_mangle]
-pub extern "C" fn resize(width: i32, height: i32) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn resize(width: i32, height: i32) {
     {
         let mut d = crate::native_display().lock().unwrap();
         d.screen_width = width as _;
@@ -321,16 +317,16 @@ pub extern "C" fn resize(width: i32, height: i32) {
     });
 }
 
-#[no_mangle]
-pub extern "C" fn touch(phase: u32, id: u32, x: f32, y: f32) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn touch(phase: u32, id: u32, x: f32, y: f32) {
     let phase = keycodes::translate_touch_phase(phase as _);
     tl_event_handler(|event_handler| {
         event_handler.touch_event(phase, id as _, x as _, y as _);
     });
 }
 
-#[no_mangle]
-pub extern "C" fn focus(has_focus: bool) {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn focus(has_focus: bool) {
     tl_event_handler(|event_handler| {
         if has_focus {
             event_handler.window_restored_event();
@@ -340,19 +336,19 @@ pub extern "C" fn focus(has_focus: bool) {
     });
 }
 
-#[no_mangle]
-pub extern "C" fn on_files_dropped_start() {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn on_files_dropped_start() {
     let mut d = crate::native_display().lock().unwrap();
     d.dropped_files = Default::default();
 }
 
-#[no_mangle]
-pub extern "C" fn on_files_dropped_finish() {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn on_files_dropped_finish() {
     tl_event_handler(|event_handler| event_handler.files_dropped_event());
 }
 
-#[no_mangle]
-pub extern "C" fn on_file_dropped(
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn on_file_dropped(
     path: *mut u8,
     path_len: usize,
     bytes: *mut u8,

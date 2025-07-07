@@ -87,8 +87,8 @@ mod wasm {
         static FILES: RefCell<HashMap<u32, Box<dyn Fn(Response)>>> = RefCell::new(HashMap::new());
     }
 
-    #[no_mangle]
-    pub extern "C" fn file_loaded(file_id: u32) {
+    #[unsafe(no_mangle)]
+    pub unsafe extern "C" fn file_loaded(file_id: u32) {
         use super::Error;
         use native::wasm::fs;
 

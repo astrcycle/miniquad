@@ -316,7 +316,7 @@ macro_rules! gl_loader {
             use super::*;
 
             $(
-                pub static mut $fn: Option<extern "C" fn ($($arg: $t),*) -> $res> = None;
+                pub static mut $fn: Option<unsafe extern "C" fn ($($arg: $t),*) -> $res> = None;
             )*
         }
 

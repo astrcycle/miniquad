@@ -466,8 +466,8 @@ pub fn load_mouse_cursor(cursor: CursorIcon) -> ObjcId {
 //             struct BlockDescriptor {
 //                 reserved: core::ffi::c_ulong,
 //                 size: core::ffi::c_ulong,
-//                 copy_helper: extern "C" fn(*mut core::ffi::c_void, *const core::ffi::c_void),
-//                 dispose_helper: extern "C" fn(*mut core::ffi::c_void),
+//                 copy_helper: unsafe extern "C" fn(*mut core::ffi::c_void, *const core::ffi::c_void),
+//                 dispose_helper: unsafe extern "C" fn(*mut core::ffi::c_void),
 //             }
 
 //             static DESCRIPTOR: BlockDescriptor = BlockDescriptor {
@@ -478,7 +478,7 @@ pub fn load_mouse_cursor(cursor: CursorIcon) -> ObjcId {
 //             };
 
 //             #[allow(unused_unsafe)]
-//             extern "C" fn copy_helper(dst: *mut core::ffi::c_void, src: *const core::ffi::c_void) {
+//             unsafe extern "C" fn copy_helper(dst: *mut core::ffi::c_void, src: *const core::ffi::c_void) {
 //                 unsafe {
 //                     ptr::write(
 //                         &mut (*(dst as *mut BlockLiteral)).inner as *mut _,
@@ -488,14 +488,14 @@ pub fn load_mouse_cursor(cursor: CursorIcon) -> ObjcId {
 //             }
 
 //             #[allow(unused_unsafe)]
-//             extern "C" fn dispose_helper(src: *mut core::ffi::c_void) {
+//             unsafe extern "C" fn dispose_helper(src: *mut core::ffi::c_void) {
 //                 unsafe {
 //                     ptr::drop_in_place(src as *mut BlockLiteral);
 //                 }
 //             }
 
 //             #[allow(unused_unsafe)]
-//             extern "C" fn invoke(literal: *mut BlockLiteral, $ ( $ arg_ident: $ arg_ty), *) $ ( -> $ return_ty) ? {
+//             unsafe extern "C" fn invoke(literal: *mut BlockLiteral, $ ( $ arg_ident: $ arg_ty), *) $ ( -> $ return_ty) ? {
 //                 let literal = unsafe {&mut *literal};
 //                 literal.inner.lock().unwrap()( $ ( $ arg_ident), *)
 //             }
@@ -505,7 +505,7 @@ pub fn load_mouse_cursor(cursor: CursorIcon) -> ObjcId {
 //                 isa: *const core::ffi::c_void,
 //                 flags: core::ffi::c_int,
 //                 reserved: core::ffi::c_int,
-//                 invoke: extern "C" fn(*mut BlockLiteral, $ ( $ arg_ty), *) $ ( -> $ return_ty) ?,
+//                 invoke: unsafe extern "C" fn(*mut BlockLiteral, $ ( $ arg_ty), *) $ ( -> $ return_ty) ?,
 //                 descriptor: *const BlockDescriptor,
 //                 inner: ::std::sync::Arc<::std::sync::Mutex<dyn Fn( $ ( $ arg_ty), *) $ ( -> $ return_ty) ? >>,
 //             }
@@ -533,7 +533,7 @@ pub fn load_mouse_cursor(cursor: CursorIcon) -> ObjcId {
 //                 isa: *const core::ffi::c_void,
 //                 flags: core::ffi::c_int,
 //                 reserved: core::ffi::c_int,
-//                 invoke: extern "C" fn(*mut BlockLiteral, $ ( $ arg_ty), *) $ ( -> $ return_ty) ?,
+//                 invoke: unsafe extern "C" fn(*mut BlockLiteral, $ ( $ arg_ty), *) $ ( -> $ return_ty) ?,
 //             }
 
 //             let block: &mut BlockLiteral = &mut *( $ inp as *mut _);
@@ -554,10 +554,10 @@ macro_rules! msg_send_ {
 }
 pub(crate) use msg_send_;
 
-pub extern "C" fn yes(_: &Object, _: Sel) -> BOOL {
+pub unsafe extern "C" fn yes(_: &Object, _: Sel) -> BOOL {
     YES
 }
 
-pub extern "C" fn yes1(_: &Object, _: Sel, _: ObjcId) -> BOOL {
+pub unsafe extern "C" fn yes1(_: &Object, _: Sel, _: ObjcId) -> BOOL {
     YES
 }
