@@ -837,8 +837,6 @@ impl GlContext {
 
 #[allow(clippy::field_reassign_with_default)]
 fn gl_info() -> ContextInfo {
-    use std::collections::HashSet;
-
     let version_string = unsafe { glGetString(super::gl::GL_VERSION) };
     let gl_version_string = unsafe { CStr::from_ptr(version_string.cast()) }
         .to_str()
@@ -851,18 +849,19 @@ fn gl_info() -> ContextInfo {
     glsl_support.v300es |= gl_version_string.contains("OpenGL ES 3");
     glsl_support.v300es |= wasm;
 
-    let mut extensions = HashSet::new();
-    let mut num_extensions = 0;
-    unsafe { glGetIntegerv(GL_NUM_EXTENSIONS, &mut num_extensions) };
-    for i in 0..(num_extensions as u32) {
-        let ext = unsafe {
-            CStr::from_ptr(glGetStringi(GL_EXTENSIONS, i).cast())
-        };
-        extensions.insert(ext);
-    }
+    //use std::collections::HashSet;
+    //let mut extensions = HashSet::new();
+    //let mut num_extensions = 0;
+    //unsafe { glGetIntegerv(GL_NUM_EXTENSIONS, &mut num_extensions) };
+    //for i in 0..(num_extensions as u32) {
+    //    let ext = unsafe {
+    //        CStr::from_ptr(glGetStringi(GL_EXTENSIONS, i).cast())
+    //    };
+    //    extensions.insert(ext);
+    //}
 
     let features = Features {
-        color_buffer_float: !wasm || extensions.contains(c"GL_EXT_color_buffer_float"),
+        color_buffer_float: false,
         timer_query: !wasm,
     };
 

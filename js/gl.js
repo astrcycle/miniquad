@@ -532,16 +532,37 @@ function dpi_scale() {
     }
 }
 
-function texture_size(internalFormat, width, height) {
-    if (internalFormat == gl.ALPHA) {
-        return width * height;
+function array_of_type(type) {
+    switch (type) {
+        case gl.BYTE: return Int8Array;
+        case gl.SHORT: return Int16Array;
+        case gl.INT: return Int32Array;
+        case gl.UNSIGNED_BYTE: return Uint8Array;
+        case gl.UNSIGNED_SHORT: return Uint16Array;
+        case gl.UNSIGNED_INT: return Uint32Array;
+        case gl.HALF_FLOAT: return Float16Array;
+        case gl.FLOAT: return Float32Array;
+        default: return Uint8Array;
     }
-    else if (internalFormat == gl.RGB) {
-        return width * height * 3;
-    } else if (internalFormat == gl.RGBA) {
-        return width * height * 4;
-    } else { // TextureFormat::RGB565 | TextureFormat::RGBA4 | TextureFormat::RGBA5551
-        return width * height * 3;
+}
+
+function texture_size(format, width, height) {
+    var s = width * height;
+    switch (format) {
+        case gl.RED:
+        case gl.RED_INTEGER:
+            return s;
+        case gl.RG:
+        case gl.RG_INTEGER:
+            return 2*s;
+        case gl.RGB:
+        case gl.RGB_INTEGER:
+            return 3*s;
+        case gl.RGBA:
+        case gl.RGBA_INTEGER:
+            return 4*s;
+        default:
+            return 0;
     }
 }
 
@@ -622,14 +643,14 @@ var importObject = {
         },
         glTexImage2D: function (target, level, internalFormat, width, height, border, format, type, pixels) {
             gl.texImage2D(target, level, internalFormat, width, height, border, format, type,
-                pixels ? getArray(pixels, Uint8Array, texture_size(internalFormat, width, height)) : null);
+                pixels ? getArray(pixels, array_of_type(type), texture_size(format, width, height)) : null);
         },
         glTexSubImage2D: function (target, level, xoffset, yoffset, width, height, format, type, pixels) {
             gl.texSubImage2D(target, level, xoffset, yoffset, width, height, format, type,
-                pixels ? getArray(pixels, Uint8Array, texture_size(format, width, height)) : null);
+                pixels ? getArray(pixels, array_of_type(type), texture_size(format, width, height)) : null);
         },
         glReadPixels: function (x, y, width, height, format, type, pixels) {
-            var pixelData = getArray(pixels, Uint8Array, texture_size(format, width, height));
+            var pixelData = getArray(pixels, array_of_type(type), texture_size(format, width, height));
             gl.readPixels(x, y, width, height, format, type, pixelData);
         },
         glTexParameteri: function (target, pname, param) {
