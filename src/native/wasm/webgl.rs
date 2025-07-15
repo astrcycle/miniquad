@@ -127,6 +127,7 @@ pub const GL_KEEP: u32 = 0x1E00;
 pub const GL_CCW: u32 = 0x0901;
 pub const GL_TEXTURE_CUBE_MAP_NEGATIVE_X: u32 = 0x8516;
 pub const GL_RGB: u32 = 0x1907;
+pub const GL_RGB_INTEGER: u32 = 0x8D98;
 pub const GL_TRIANGLE_STRIP: u32 = 0x0005;
 pub const GL_FALSE: u32 = 0;
 pub const GL_ZERO: u32 = 0;
