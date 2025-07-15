@@ -98,6 +98,9 @@ pub use android::*;
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
 
+#[cfg(target_os = "emscripten")]
+pub mod emscripten;
+
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 pub mod apple;
 

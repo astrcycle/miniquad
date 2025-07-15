@@ -101,6 +101,27 @@ cargo install basic-http-server
 basic-http-server .
 ```
 
+## WASM via Emscripten
+
+Make sure to install the Emscripten SDK first.
+
+```bash
+rustup target add wasm32-unknown-emscripten
+mkdir webpage
+RUSTFLAGS="\
+    -Clink-arg=--pre-js=js/em-pre.js \
+    -Clink-arg=--js-library=js/em-lib.js \
+    -Clink-arg=--shell-file=js/shell.html \
+    -Clink-arg=-sSTACK_SIZE=10000000 \
+    -Clink-arg=-sUSE_WEBGL2=1 \
+    -Clink-arg=-sEXPORTED_RUNTIME_METHODS=[\"ccall\"] \
+    -Clink-arg=-o \
+    -Clink-arg=webpage/quad.html" \
+    cargo build --example quad --target wasm32-unknown-emscripten
+cd webpage
+emrun quad.html
+```
+
 ## Android
 
 Recommended way to build for android is using Docker.<br/>

@@ -65,9 +65,11 @@ where
         }));
     }
 
-    unsafe {
-        init_webgl();
-    }
+    #[cfg(target_os = "emscripten")]
+    crate::native::emscripten::init_webgl();
+    #[cfg(not(target_os = "emscripten"))]
+    unsafe { init_webgl(); };
+
 
     // setup initial canvas size
     unsafe {
@@ -132,7 +134,10 @@ unsafe extern "C" {
     pub fn sapp_is_fullscreen() -> bool;
     pub fn sapp_set_window_size(new_width: u32, new_height: u32);
     pub fn sapp_schedule_update();
+
+    #[cfg(not(target_os = "emscripten"))]
     pub fn init_webgl();
+
     pub fn now() -> f64;
 }
 
