@@ -153,7 +153,8 @@ pub mod window {
     /// NOTE: [High DPI Rendering](../conf/index.html#high-dpi-rendering)
     pub fn dpi_scale() -> f32 {
         let d = native_display().lock().unwrap();
-        d.dpi_scale
+        let dpi = d.dpi_scale;
+        if dpi.is_normal() { dpi } else { 1.0 }
     }
 
     /// True when high_dpi was requested and actually running in a high-dpi scenario
