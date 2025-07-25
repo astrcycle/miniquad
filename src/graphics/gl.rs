@@ -86,8 +86,8 @@ impl TextureFormat {
             F::RGB16F => false,
             F::RGBA16F => features.color_buffer_float,
             F::R32F => features.color_buffer_float,
-            F::RG32F => false,
-            F::RGB32F => features.color_buffer_float,
+            F::RG32F => features.color_buffer_float,
+            F::RGB32F => false,
             F::RGBA32F => features.color_buffer_float,
             _ => true,
         }
@@ -861,7 +861,7 @@ fn gl_info() -> ContextInfo {
     //}
 
     let features = Features {
-        color_buffer_float: false,
+        color_buffer_float: true,
         timer_query: !wasm,
     };
 
